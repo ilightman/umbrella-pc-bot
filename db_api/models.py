@@ -29,3 +29,17 @@ class User(Model):
 
     def __str__(self):
         return f'{self.id} - {self.username} - {self.first_name} - {self.speciality}'
+
+
+class Order(Model):
+    id = fields.IntField(pk=True)
+
+    photo_id = fields.CharField(max_length=100, null=True)
+    content = fields.CharField(max_length=150)
+    quantity = fields.IntField(null=True)
+
+    order_manager = fields.ForeignKeyField('models.User', related_name='order_manager')
+    order_builder = fields.IntField(null=True)
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    finished_at = fields.DatetimeField(null=True)

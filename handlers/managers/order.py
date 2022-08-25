@@ -2,13 +2,14 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from bot import dp
+from db_api.orders import create_order
 from keyboards.manager_kb import yes_no_inl_kb
 from misc.filters import IsManager
 from misc.service_messages import notify_pc_builders, now_time
 
 
 @dp.message_handler(IsManager(), commands=['create_order'])
-async def create_order(message: types.Message, state: FSMContext):
+async def create_order_command(message: types.Message, state: FSMContext):
     await message.answer('Пришлите фото или введите конфигурацию оборудования')
     await state.set_state('photo_or_name_input')
 
@@ -70,10 +71,11 @@ async def add_photo_callback(cb: types.CallbackQuery, state: FSMContext):
             photo = state_data.get('photo_id')
             name, quantity = state_data.get('name'), state_data.get('quantity')
             msg = f'{now_time()} Заказ на сборку:\n\n <b>{name}</b> - <b>{quantity} шт.</b>'
+            await create_order(name, quantity, cb.from_user.id, photo if photo else None)
             await cb.message.answer('[ да ]')
             await cb.message.answer('Заказ передан сборщикам')
             await notify_pc_builders(text=msg, photo=photo if photo else None)
     if 'no' in cb_data[1] or 'cancel' in cb_data[1]:
-        await cb.message.answer('[ отмена ]')
+        await cb.message.answer('[ нет ]')
     await cb.message.delete()
     await state.reset_state(with_data=True)
